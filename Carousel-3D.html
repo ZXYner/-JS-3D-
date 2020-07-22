@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carousel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            margin: 50px auto;
+            width: 1000px;
+            height: 500px;
+            background-color: #000;
+            /*overflow: hidden;*/
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .wrapper {
+            height: 500px;
+            width: 900px;
+            /*border: 1px solid #000;*/
+            /*注意：这里解决了slide的子元素之间的间距问题————即使设置了margin和padding时，子元素之间仍有间距（子元素之间存在空格或换行字符），所以这里需要设置字体大小为0*/
+            font-size: 0px;
+            /**/
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .wrapper:hover {
+            cursor: pointer;
+        }
+        
+        .slide {
+            width: 300px;
+            height: 500px;
+            display: inline-block;
+            border: none;
+            font-size: 32px;
+            font-weight: 900;
+            text-align: center;
+            perspective: 600px;
+        }
+        
+        .slide img {
+            width: 100%;
+            height: 100%;
+            transform: translateZ(-500px);
+        }
+        
+        .pre-slide img {
+            /*background-color: rgb(56, 233, 50);*/
+            transform: translateZ(0px) rotateY(45deg);
+            transition: all .5s;
+        }
+        /**/
+        
+        .cur-slide img {
+            /*background-color: rgb(57, 180, 236);*/
+            transform: translateZ(100px);
+            transition: all .5s;
+        }
+        
+        .next-slide img {
+            /*background-color: #f4f81c;*/
+            transform: translateZ(0px) rotateY(-45deg);
+            transition: all .5s;
+        }
+        /*
+        .next {
+            background-color: rgb(233, 25, 153);
+        }
+        */
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="wrapper">
+            <div class="slide pre-slide">
+                <img src="img/img1.jpg">
+            </div>
+            <div class="slide cur-slide">
+                <img src="img/img2.jpg">
+            </div>
+            <div class="slide next-slide">
+                <img src="img/img3.jpg">
+            </div>
+            <div class="slide">
+                <img src="img/img4.jpg">
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    //let slides = document.querySelector('.slide');
+    /*
+     * preEl用来记录轮播图的最左边的元素
+     * distance用来记录每次轮播时的偏移量
+     * prePos用来记录轮播图最左边元素的Index
+     * downPos用来记录mousedown时鼠标的clientX
+     * flag用来记录窗口移动的方向，true向左，false向右
+     * 
+     * 
+     * 
+     */
+    let preEl, wrapper, slides, container, downPos, prePos, timeID, num;
+    init();
+
+    function init() {
+        preEl = null;
+        prePos = 0;
+        flag = true;
+        wrapper = document.querySelector('.wrapper')
+        slides = document.getElementsByClassName('slide')
+        container = document.querySelector('.container')
+        num = slides.length;
+        let firstNode = slides[0].cloneNode(true);
+        let secondNode = slides[1].cloneNode(true);
+        wrapper.appendChild(firstNode);
+        wrapper.appendChild(secondNode);
+        //注意要修改添加节点的className
+        //slides[slides.length - 1].className = 'slide'
+        //slides[slides.length - 2].className = 'slide' 
+        distance = slides[0].clientWidth;
+        //初始化处理
+        //根据slide的多少动态设置wrapper的宽度
+        wrapper.style['width'] = slides.length * distance + 'px';
+        container.style.width = 3 * distance + 'px';
+        //wrapper.style.left = -distance + 'px';
+        //console.log(wrapper.style);
+
+        //timeID = setInterval(move, 3000);
+        wrapper.addEventListener('mousedown', handelMouseDown, true);
+        wrapper.addEventListener('mouseenter', handleMouseenter);
+        wrapper.addEventListener('mouseleave', handleMouseleave);
+    }
+
+    function move() {
+        //slides[prePos].className = 'slide';
+        //slides[prePos + 1].className = 'slide';
+        //slides[prePos + 2].className = 'slide';
+        updateClassName(prePos, 'slide')
+        updateClassName(prePos + 1, 'slide')
+        updateClassName(prePos + 2, 'slide')
+            //注意这里要解决首位衔接转换时的动画效果不一致问题，从最后一张到第一张时，要提前设置第1张和第二张图片的状态(当prePos指向最后一张图片时)；当第一张划到最后一张图片时，需要提前设置添加后的两张图片状态
+        if (flag) {
+
+            if (prePos === slides.length - 3) {
+                prePos = 0;
+            } else {
+                prePos++;
+            }
+        } else {
+
+            if (prePos === 0) {
+                prePos = slides.length - 3;
+            } else {
+                prePos--;
+            }
+        }
+        //console.log(prePos);
+        wrapper.style.left = -prePos * distance + 'px';
+        //slides[prePos].className = 'slide'
+        //slides[prePos].className = 'slide pre-slide';
+        //slides[prePos + 1].className = 'slide cur-slide';
+        //slides[prePos + 2].className = 'slide next-slide';
+        console.log(prePos);
+        updateClassName(prePos, 'slide pre-slide')
+        updateClassName(prePos + 1, 'slide cur-slide')
+        updateClassName(prePos + 2, 'slide next-slide')
+    }
+
+    function updateClassName(pos, name) {
+        switch (pos) {
+            case 0:
+            case slides.length - 2:
+                console.log(name);
+                slides[0].className = slides[slides.length - 2].className = name
+                break;
+            case 1:
+            case slides.length - 1:
+                slides[1].className = slides[slides.length - 1].className = name
+                break;
+            default:
+                slides[pos].className = name;
+                break;
+        }
+    }
+
+    function handelMouseUp(e) {
+        //console.log(e.clientX);
+        if (e.clientX < downPos) {
+            //console.log('左');
+            flag = true;
+        } else if (e.clientX > downPos) {
+            //console.log('右');
+            flag = false;
+        }
+        move();
+    }
+
+    function handleMouseenter(e) {
+        //console.log('enter');
+        clearInterval(timeID);
+    }
+
+    function handleMouseleave() {
+        //console.log('leave');
+        //timeID = setInterval(move, 3000)
+    }
+
+    function handelMouseDown(e) {
+        //console.log(e.target);
+        //此处解决连续对同一个sliede的mousedown和mouseup使用一次后失效的问题
+        //原因：
+        //触发了浏览器的 drag 操作，导致mouseup丢失。
+        //由于鼠标离开了操作的区域，触发了mouseleave导致mouseup丢失。
+        e.preventDefault(); //我可能遇到的是第一种情况
+        //e.stopPropagation();
+        downPos = e.clientX;
+        wrapper.addEventListener('mouseup', handelMouseUp);
+    }
+</script>
+
+</html>
