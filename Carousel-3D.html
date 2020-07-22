@@ -54,26 +54,26 @@
         .slide img {
             width: 100%;
             height: 100%;
-            transform: translateZ(-500px);
+            transform: translateZ(-300px);
         }
         
         .pre-slide img {
             /*background-color: rgb(56, 233, 50);*/
-            transform: translateZ(0px) rotateY(45deg);
-            transition: all 1.5s;
+            transform: rotateY(40deg) translateZ(0px);
+            transition: all 1s ease-out;
         }
         /**/
         
         .cur-slide img {
             /*background-color: rgb(57, 180, 236);*/
             transform: translateZ(100px);
-            transition: all 1.5s;
+            transition: all 1s ease-out;
         }
         
         .next-slide img {
             /*background-color: #f4f81c;*/
-            transform: translateZ(0px) rotateY(-45deg);
-            transition: all 1.5s;
+            transform: rotateY(-40deg) translateZ(0px);
+            transition: all 1s ease-out;
         }
     </style>
 </head>
@@ -92,6 +92,9 @@
             </div>
             <div class="slide">
                 <img src="img/img4.jpg">
+            </div>
+            <div class="slide">
+                <img src="img/img5.jpg">
             </div>
         </div>
     </div>
@@ -130,7 +133,7 @@
         //console.log(wrapper.style);
 
         timeID = setInterval(move, 3000);
-        wrapper.addEventListener('mousedown', handelMouseDown, true);
+        wrapper.addEventListener('mousedown', handleMouseDown, true);
         wrapper.addEventListener('mouseenter', handleMouseenter);
         wrapper.addEventListener('mouseleave', handleMouseleave);
     }
@@ -156,7 +159,7 @@
         }
         //console.log(prePos);
         wrapper.style.left = -prePos * distance + 'px';
-        console.log(prePos);
+        //console.log(prePos);
         updateClassName(prePos, 'slide pre-slide')
         updateClassName(prePos + 1, 'slide cur-slide')
         updateClassName(prePos + 2, 'slide next-slide')
@@ -166,7 +169,6 @@
         switch (pos) {
             case 0:
             case slides.length - 2:
-                console.log(name);
                 slides[0].className = slides[slides.length - 2].className = name
                 break;
             case 1:
@@ -179,7 +181,7 @@
         }
     }
 
-    function handelMouseUp(e) {
+    function handleMouseUp(e) {
         //console.log(e.clientX);
         if (e.clientX < downPos) {
             //console.log('左');
@@ -193,7 +195,6 @@
 
     function handleMouseenter(e) {
         //console.log('enter');
-
         clearInterval(timeID);
     }
 
@@ -203,7 +204,7 @@
         timeID = setInterval(move, 3000)
     }
 
-    function handelMouseDown(e) {
+    function handleMouseDown(e) {
         //console.log(e.target);
         //此处解决连续对同一个sliede的mousedown和mouseup使用一次后失效的问题
         //原因：
@@ -212,7 +213,7 @@
         e.preventDefault(); //我可能遇到的是第一种情况
         //e.stopPropagation();
         downPos = e.clientX;
-        wrapper.addEventListener('mouseup', handelMouseUp);
+        wrapper.addEventListener('mouseup', handleMouseUp);
     }
 </script>
 
