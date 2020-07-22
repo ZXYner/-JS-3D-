@@ -11,12 +11,15 @@
             padding: 0;
         }
         
+        body {
+            background-color: #000;
+        }
+        
         .container {
             margin: 50px auto;
             width: 1000px;
             height: 500px;
-            background-color: #000;
-            /*overflow: hidden;*/
+            /*background-color: #ececec;*/
             overflow: hidden;
             position: relative;
         }
@@ -57,20 +60,20 @@
         .pre-slide img {
             /*background-color: rgb(56, 233, 50);*/
             transform: translateZ(0px) rotateY(45deg);
-            transition: all .5s;
+            transition: all 1.5s;
         }
         /**/
         
         .cur-slide img {
             /*background-color: rgb(57, 180, 236);*/
             transform: translateZ(100px);
-            transition: all .5s;
+            transition: all 1.5s;
         }
         
         .next-slide img {
             /*background-color: #f4f81c;*/
             transform: translateZ(0px) rotateY(-45deg);
-            transition: all .5s;
+            transition: all 1.5s;
         }
         /*
         .next {
@@ -125,9 +128,6 @@
         let secondNode = slides[1].cloneNode(true);
         wrapper.appendChild(firstNode);
         wrapper.appendChild(secondNode);
-        //注意要修改添加节点的className
-        //slides[slides.length - 1].className = 'slide'
-        //slides[slides.length - 2].className = 'slide' 
         distance = slides[0].clientWidth;
         //初始化处理
         //根据slide的多少动态设置wrapper的宽度
@@ -136,16 +136,13 @@
         //wrapper.style.left = -distance + 'px';
         //console.log(wrapper.style);
 
-        //timeID = setInterval(move, 3000);
+        timeID = setInterval(move, 3000);
         wrapper.addEventListener('mousedown', handelMouseDown, true);
         wrapper.addEventListener('mouseenter', handleMouseenter);
         wrapper.addEventListener('mouseleave', handleMouseleave);
     }
 
     function move() {
-        //slides[prePos].className = 'slide';
-        //slides[prePos + 1].className = 'slide';
-        //slides[prePos + 2].className = 'slide';
         updateClassName(prePos, 'slide')
         updateClassName(prePos + 1, 'slide')
         updateClassName(prePos + 2, 'slide')
@@ -208,12 +205,14 @@
 
     function handleMouseenter(e) {
         //console.log('enter');
+
         clearInterval(timeID);
     }
 
     function handleMouseleave() {
         //console.log('leave');
-        //timeID = setInterval(move, 3000)
+        flag = true;
+        timeID = setInterval(move, 3000)
     }
 
     function handelMouseDown(e) {
