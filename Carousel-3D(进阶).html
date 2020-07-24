@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            margin: 50px auto;
+            width: 900px;
+            height: 700px;
+            /*background-color: #ececec;
+            */
+            overflow: hidden;
+            position: relative;
+            perspective: 1600px;
+        }
+        
+        .wrapper {
+            height: 700px;
+            width: 1500px;
+            /*
+            border: 1px solid #000;*/
+            /*注意：这里解决了slide的子元素之间的间距问题————即使设置了margin和padding时，子元素之间仍有间距（子元素之间存在空格或换行字符），所以这里需要设置字体大小为0*/
+            font-size: 0px;
+            /*
+            overflow: hidden;*/
+            position: absolute;
+            left: 0;
+            top: 0;
+            white-space: nowrap;
+        }
+        
+        .wrapper:hover {
+            cursor: pointer;
+        }
+        
+        .slide {
+            width: 300px;
+            height: 500px;
+            margin-top: 30px;
+            display: inline-block;
+            border: none;
+            font-size: 0px;
+            text-align: center;
+        }
+        
+        .slide img {
+            width: 100%;
+            height: 100%;
+        }
+        /* 
+        
+        .pre-slide {
+            transform: rotateY(50deg);
+        }
+        
+        .cur-slide {
+            transform: translateZ(100px);
+        }
+        
+        .next-slide {
+            transform: rotateY(-50deg);
+        }
+        */
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="wrapper">
+            <div class="slide pre-slide">
+                <img src="img/img1.jpg">
+            </div>
+            <div class="slide cur-slide">
+                <img src="img/img2.jpg">
+            </div>
+            <div class="slide next-slide">
+                <img src="img/img3.jpg">
+            </div>
+            <div class="slide pre-slide">
+                <img src="img/img4.jpg">
+            </div>
+            <div class="slide pre-slide">
+                <img src="img/img5.jpg">
+            </div>
+            <div class="slide pre-slide">
+                <img src="img/img6.jpg">
+            </div>
+        </div>
+</body>
+<script>
+    var container, wrapper, slides, preMousePos, preRotate = [],
+        downPos, upPos, flag, cross, iniLength,
+        iniRotate = 50,
+        initPos = cur = 1; //initPos用来记录上次的中心位置，cur用来表示当前的中心位置
+    init();
+
+    function init() {
+        container = document.querySelector('.container');
+        wrapper = document.querySelector('.wrapper');
+        slides = document.getElementsByClassName('slide')
+        iniLength = slides.length;
+        let firstNode = slides[0].cloneNode(true);
+        let secondNode = slides[1].cloneNode(true);
+        let thirdNode = slides[2].cloneNode(true);
+        wrapper.appendChild(firstNode);
+        wrapper.appendChild(secondNode);
+        wrapper.appendChild(thirdNode);
+        //初始化slide的样式
+        container.addEventListener('mousedown', handleMousedown)
+        for (let i = 0; i < slides.length; i++) {
+            if (i === cur)
+                slides[i].style.transform = "translateZ(100px) rotateY(" + (iniRotate * (1 - i)) + "deg)"
+            else
+                slides[i].style.transform = "translateZ(0px) rotateY(" + (iniRotate * (1 - i)) + "deg)"
+        }
+
+        //slides[initLength].style.transform = slides[0].style.transform;
+        //slides[initLength + 1].style.transform = slides[1].style.transform;
+    }
+    //console.log(slides[0].style.transform);
+    function getLastRotate() {
+        for (let i = 0; i < slides.length; i++) {
+            let str = slides[i].style.transform;
+            let index = str.indexOf('rotateY');
+            preRotate[i] = parseInt(str.slice(index + 8, -4));
+        }
+    }
+
+    function handleMouseup(e) {
+        var angle, progress, distance;
+        if (flag) {
+            cross--;
+        } else {
+            cross++;
+        }
+        distance = 100;
+        angle = iniRotate * cross;
+        transform(angle, distance, 0.5, flag)
+        cur = initPos - cross;
+        initPos = cur;
+        wrapper.style.left = -300 * (cur - 1) + 'px';
+        wrapper.style.transition = "all 0.5s ease"
+        window.removeEventListener('mousemove', handleMousemove);
+        window.removeEventListener('mouseup', handleMouseup);
+    }
+
+    function updateRotate(operation) {
+        if (operation === 1) {
+            initPos = cur = 1
+            wrapper.style.left = 0 + 'px';
+            for (let i = 0; i < slides.length; i++) {
+                if (i === initPos)
+                    slides[i].style.transform = "translateZ(100px) rotateY(" + (iniRotate * (1 - i)) + "deg)"
+                else
+                    slides[i].style.transform = "translateZ(0px) rotateY(" + (iniRotate * (1 - i)) + "deg)"
+            }
+        } else {
+            initPos = cur = iniLength + 1;
+            wrapper.style.left = -300 * (cur - 1) + 'px';
+            for (let i = slides.length - 1; i >= 0; i--) {
+                if (i === initPos)
+                    slides[i].style.transform = "translateZ(100px) rotateY(" + (iniRotate * (cur - i)) + "deg)"
+                else
+                    slides[i].style.transform = "translateZ(0px) rotateY(" + (iniRotate * (cur - i)) + "deg)"
+            }
+        }
+        getLastRotate()
+    }
+
+    function transform(angle, distance, duration, flag) {
+
+        for (let i = 0; i < slides.length; i++) {
+            if (i === cur)
+                slides[i].style.transform = "translateZ(" + (100 - distance) + "px) rotateY(" + (preRotate[i] - angle) % 360 + "deg)"
+            else if ((flag && i === cur + 1) || (!flag && i === cur - 1)) {
+                slides[i].style.transform = "translateZ(" + (distance) + "px) rotateY(" + (preRotate[i] - angle) % 360 + "deg)"
+            } else {
+
+                slides[i].style.transform = "translateZ(0px) rotateY(" + (preRotate[i] - angle) % 360 + "deg)"
+            }
+            slides[i].style.transition = "all  " + duration + "s ease";
+        }
+
+    }
+
+    function handleMousemove(e) {
+        window.addEventListener('mouseup', handleMouseup);
+        //if (-900 <= wrapper.offsetLeft && wrapper.offsetLeft < 600) {}
+        //这里的left是根据上一次的偏移量计算而来，所以需要计算每次鼠标的偏移量
+        wrapper.style.left = wrapper.offsetLeft + e.clientX - preMousePos + 'px';
+        wrapper.style.transition = "all 0ms ease"
+            //旋转角度是根据最初设定的rotate来计算
+        var angle, progress, distance;
+        cross = parseInt((e.clientX - downPos) / 300);
+        cur = initPos - cross;
+        progress = ((e.clientX - downPos) % 300) / 300;
+        if (progress < 0) flag = true;
+        else flag = false;
+        // angle = iniRotate * (progress + cross);
+        //distance = 100 * progress;
+        distance = Math.abs(100 * progress);
+        angle = iniRotate * (progress + cross);
+
+        //重新定义slide数组元素的旋转角度，以将要循环的视口图像为参照图像
+        if (flag && cur === (iniLength + 1)) {
+            updateRotate(1)
+        }
+        if (!flag && cur === 1) {
+            updateRotate(2)
+        }
+        transform(angle, distance, 0, flag)
+        preMousePos = e.clientX;
+
+    }
+
+    function handleMousedown(e) {
+        e.preventDefault();
+        preMousePos = e.clientX;
+        downPos = e.clientX;
+        cross = 0;
+        //console.log(slides[0].style.transform);
+        getLastRotate()
+        window.addEventListener('mousemove', handleMousemove)
+    }
+</script>
+
+</html>
