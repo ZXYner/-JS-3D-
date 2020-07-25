@@ -75,22 +75,22 @@
 <body>
     <div class="container">
         <div class="wrapper">
-            <div class="slide pre-slide">
+            <div class="slide">
                 <img src="img/img1.jpg">
             </div>
-            <div class="slide cur-slide">
+            <div class="slide">
                 <img src="img/img2.jpg">
             </div>
-            <div class="slide next-slide">
+            <div class="slide">
                 <img src="img/img3.jpg">
             </div>
-            <div class="slide pre-slide">
+            <div class="slide">
                 <img src="img/img4.jpg">
             </div>
-            <div class="slide pre-slide">
+            <div class="slide">
                 <img src="img/img5.jpg">
             </div>
-            <div class="slide pre-slide">
+            <div class="slide">
                 <img src="img/img6.jpg">
             </div>
         </div>
@@ -115,15 +115,7 @@
         wrapper.appendChild(thirdNode);
         //初始化slide的样式
         container.addEventListener('mousedown', handleMousedown)
-        for (let i = 0; i < slides.length; i++) {
-            if (i === cur)
-                slides[i].style.transform = "translateZ(100px) rotateY(" + (iniRotate * (1 - i)) + "deg)"
-            else
-                slides[i].style.transform = "translateZ(0px) rotateY(" + (iniRotate * (1 - i)) + "deg)"
-        }
-
-        //slides[initLength].style.transform = slides[0].style.transform;
-        //slides[initLength + 1].style.transform = slides[1].style.transform;
+        updateRotate(1)
     }
     //console.log(slides[0].style.transform);
     function getLastRotate() {
@@ -137,25 +129,64 @@
     function handleMouseup(e) {
         var angle, progress, distance;
         if (flag) {
-            cross--;
+            if (cur === (iniLength + 1)) {
+                //console.log(preRotate, cur, initPos);
+                updateRotate(1)
+                distance = 100;
+                angle = -50;
+                console.log(preRotate, cur, initPos);
+                transform(angle, distance, 0, flag);
+                //getLastRotate()
+                //console.log(preRotate, cur, initPos);
+                wrapper.style.left = "-300px";
+                wrapper.style.transition = "all 0.5s ease";
+                cur++;
+                initPos = cur;
+            } else {
+                distance = 100;
+                angle = iniRotate * (cross - 1);
+                transform(angle, distance, 0.8, flag);
+                cross--;
+                cur = initPos - cross
+                initPos = cur;
+                wrapper.style.left = -300 * (cur - 1) + 'px';
+                wrapper.style.transition = "all 0.8s ease"
+            }
+
         } else {
-            cross++;
+            if (cur === 1) {
+                //console.log(wrapper.offsetLeft);
+                updateRotate(2);
+                //console.log(wrapper.offsetLeft);
+                wrapper.style.left = -1500 + 'px';
+                wrapper.style.transition = "all 0.5s ease";
+                //console.log(cur);
+                distance = 100;
+                angle = 50;
+                transform(angle, distance, 0, flag)
+                cur--;
+                initPos = cur;
+            } else {
+                distance = 100;
+                angle = iniRotate * (cross + 1);
+                transform(angle, distance, 0.8, flag)
+                cross++;
+                cur = initPos - cross;
+                initPos = cur;
+                wrapper.style.left = -300 * (cur - 1) + 'px';
+                wrapper.style.transition = "all 0.8s ease"
+            }
+            //console.log(cur);
         }
-        distance = 100;
-        angle = iniRotate * cross;
-        transform(angle, distance, 0.5, flag)
-        cur = initPos - cross;
-        initPos = cur;
-        wrapper.style.left = -300 * (cur - 1) + 'px';
-        wrapper.style.transition = "all 0.5s ease"
         window.removeEventListener('mousemove', handleMousemove);
         window.removeEventListener('mouseup', handleMouseup);
+
     }
 
     function updateRotate(operation) {
         if (operation === 1) {
             initPos = cur = 1
-            wrapper.style.left = 0 + 'px';
+                //wrapper.style.left = 0 + 'px';
             for (let i = 0; i < slides.length; i++) {
                 if (i === initPos)
                     slides[i].style.transform = "translateZ(100px) rotateY(" + (iniRotate * (1 - i)) + "deg)"
@@ -164,7 +195,6 @@
             }
         } else {
             initPos = cur = iniLength + 1;
-            wrapper.style.left = -300 * (cur - 1) + 'px';
             for (let i = slides.length - 1; i >= 0; i--) {
                 if (i === initPos)
                     slides[i].style.transform = "translateZ(100px) rotateY(" + (iniRotate * (cur - i)) + "deg)"
@@ -172,18 +202,18 @@
                     slides[i].style.transform = "translateZ(0px) rotateY(" + (iniRotate * (cur - i)) + "deg)"
             }
         }
+        wrapper.style.left = -300 * (cur - 1) + 'px';
+        wrapper.style.transition = "all 0s ease"
         getLastRotate()
     }
 
     function transform(angle, distance, duration, flag) {
-
         for (let i = 0; i < slides.length; i++) {
             if (i === cur)
-                slides[i].style.transform = "translateZ(" + (100 - distance) + "px) rotateY(" + (preRotate[i] - angle) % 360 + "deg)"
+                slides[i].style.transform = "translateZ(" + (100 - distance) + "px) rotateY(" + (preRotate[i] - angle) + "deg)"
             else if ((flag && i === cur + 1) || (!flag && i === cur - 1)) {
                 slides[i].style.transform = "translateZ(" + (distance) + "px) rotateY(" + (preRotate[i] - angle) % 360 + "deg)"
             } else {
-
                 slides[i].style.transform = "translateZ(0px) rotateY(" + (preRotate[i] - angle) % 360 + "deg)"
             }
             slides[i].style.transition = "all  " + duration + "s ease";
@@ -192,8 +222,6 @@
     }
 
     function handleMousemove(e) {
-        window.addEventListener('mouseup', handleMouseup);
-        //if (-900 <= wrapper.offsetLeft && wrapper.offsetLeft < 600) {}
         //这里的left是根据上一次的偏移量计算而来，所以需要计算每次鼠标的偏移量
         wrapper.style.left = wrapper.offsetLeft + e.clientX - preMousePos + 'px';
         wrapper.style.transition = "all 0ms ease"
@@ -202,10 +230,8 @@
         cross = parseInt((e.clientX - downPos) / 300);
         cur = initPos - cross;
         progress = ((e.clientX - downPos) % 300) / 300;
-        if (progress < 0) flag = true;
+        if ((e.clientX - preMousePos) < 0) flag = true;
         else flag = false;
-        // angle = iniRotate * (progress + cross);
-        //distance = 100 * progress;
         distance = Math.abs(100 * progress);
         angle = iniRotate * (progress + cross);
 
@@ -218,7 +244,6 @@
         }
         transform(angle, distance, 0, flag)
         preMousePos = e.clientX;
-
     }
 
     function handleMousedown(e) {
@@ -226,9 +251,10 @@
         preMousePos = e.clientX;
         downPos = e.clientX;
         cross = 0;
-        //console.log(slides[0].style.transform);
         getLastRotate()
+            //console.log(preRotate, cur, initPos);
         window.addEventListener('mousemove', handleMousemove)
+        window.addEventListener('mouseup', handleMouseup);
     }
 </script>
 
